@@ -3,6 +3,7 @@ package com.bloomstudio.api.dto.response;
 import com.bloomstudio.api.entity.Order;
 import com.bloomstudio.api.entity.OrderItem;
 import com.bloomstudio.api.enums.OrderStatus;
+import com.bloomstudio.api.enums.ProductSize;
 import lombok.Builder;
 import lombok.Data;
 
@@ -34,6 +35,8 @@ public class OrderResponse {
         private String productName;
         private String productSlug;
         private String productImage;
+        private Long variantId;
+        private ProductSize size;
         private Integer quantity;
         private BigDecimal unitPrice;
         private BigDecimal subtotal;
@@ -45,6 +48,8 @@ public class OrderResponse {
                     .productSlug(item.getProduct().getSlug())
                     .productImage(item.getProduct().getImages() != null && !item.getProduct().getImages().isEmpty()
                             ? item.getProduct().getImages().get(0) : null)
+                    .variantId(item.getVariant() != null ? item.getVariant().getId() : null)
+                    .size(item.getSize())
                     .quantity(item.getQuantity())
                     .unitPrice(item.getUnitPrice())
                     .subtotal(item.getSubtotal())

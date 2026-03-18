@@ -1,5 +1,6 @@
 package com.bloomstudio.api.entity;
 
+import com.bloomstudio.api.enums.ProductSize;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,13 @@ public class OrderItem {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "variant_id")
+    private ProductVariant variant;
+
+    @Enumerated(EnumType.STRING)
+    private ProductSize size;
 
     @Column(nullable = false)
     private Integer quantity;

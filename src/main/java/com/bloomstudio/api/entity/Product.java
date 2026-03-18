@@ -4,8 +4,8 @@ import com.bloomstudio.api.enums.ProductCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,12 +27,6 @@ public class Product {
     private String description;
 
     private String shortDescription;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal originalPrice;
 
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
@@ -68,6 +62,10 @@ public class Product {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Builder.Default
+    private List<ProductVariant> variants = new ArrayList<>();
 
     @PrePersist
     void prePersist() {

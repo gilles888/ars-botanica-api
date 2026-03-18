@@ -33,6 +33,8 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status;
 
+    private String stripeSessionId;
+
     // Delivery info
     private String deliveryAddress;
     private String deliveryZip;

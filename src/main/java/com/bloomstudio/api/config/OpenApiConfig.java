@@ -22,10 +22,10 @@ public class OpenApiConfig {
                 .contact(new Contact()
                     .name("Bloom Studio")
                     .email("bonjour@bloom-studio.fr")))
-            .addSecurityItem(new SecurityRequirement().addList("Bearer Auth"))
+            .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
             .components(new Components()
-                .addSecuritySchemes("Bearer Auth", new SecurityScheme()
-                    .name("Bearer Auth")
+                .addSecuritySchemes("BearerAuth", new SecurityScheme()
+                    .name("BearerAuth")
                     .type(SecurityScheme.Type.HTTP)
                     .scheme("bearer")
                     .bearerFormat("JWT")));

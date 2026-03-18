@@ -5,12 +5,14 @@ import com.bloomstudio.api.dto.response.OrderResponse;
 import com.bloomstudio.api.entity.Order;
 import com.bloomstudio.api.entity.OrderItem;
 import com.bloomstudio.api.entity.Product;
+import com.bloomstudio.api.entity.ProductVariant;
 import com.bloomstudio.api.entity.User;
 import com.bloomstudio.api.enums.OrderStatus;
 import com.bloomstudio.api.exception.BadRequestException;
 import com.bloomstudio.api.exception.ResourceNotFoundException;
 import com.bloomstudio.api.repository.OrderRepository;
 import com.bloomstudio.api.repository.ProductRepository;
+import com.bloomstudio.api.repository.ProductVariantRepository;
 import com.bloomstudio.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +29,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final ProductVariantRepository variantRepository;
     private final UserRepository userRepository;
 
     public List<OrderResponse> getMyOrders(String email) {
@@ -54,12 +57,17 @@ public class OrderService {
 
     @Transactional
     public OrderResponse create(OrderRequest request, String email) {
+        return OrderResponse.from(createOrderEntity(request, email));
+    }
+
+    @Transactional
+    public Order createOrderEntity(OrderRequest request, String email) {
         User user = findUserByEmail(email);
 
         Order order = Order.builder()
                 .orderNumber("BS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .user(user)
-                .status(OrderStatus.PENDING)
+                .status(OrderStatus.PAYMENT_PENDING)
                 .deliveryAddress(request.getDeliveryAddress())
                 .deliveryZip(request.getDeliveryZip())
                 .deliveryCity(request.getDeliveryCity())
@@ -77,11 +85,22 @@ public class OrderService {
                 throw new BadRequestException("Produit en rupture de stock : " + product.getName());
             }
 
-            BigDecimal lineTotal = product.getPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity()));
+            ProductVariant variant = variantRepository.findById(itemReq.getVariantId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Variante non trouvée : " + itemReq.getVariantId()));
+
+            if (!variant.getProduct().getId().equals(product.getId())) {
+                throw new BadRequestException(
+                        "La variante " + itemReq.getVariantId() + " n'appartient pas au produit " + itemReq.getProductId());
+            }
+
+            BigDecimal unitPrice = variant.getPrice();
+            BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(itemReq.getQuantity()));
             OrderItem item = OrderItem.builder()
                     .product(product)
+                    .variant(variant)
+                    .size(variant.getSize())
                     .quantity(itemReq.getQuantity())
-                    .unitPrice(product.getPrice())
+                    .unitPrice(unitPrice)
                     .subtotal(lineTotal)
                     .build();
             order.addItem(item);
@@ -96,7 +115,22 @@ public class OrderService {
         order.setShippingCost(shippingCost);
         order.setTotal(subtotal.add(shippingCost));
 
-        return OrderResponse.from(orderRepository.save(order));
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public void updateStripeSession(Long orderId, String stripeSessionId) {
+        Order order = findById(orderId);
+        order.setStripeSessionId(stripeSessionId);
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void confirmPayment(String stripeSessionId) {
+        orderRepository.findByStripeSessionId(stripeSessionId).ifPresent(order -> {
+            order.setStatus(OrderStatus.PAID);
+            orderRepository.save(order);
+        });
     }
 
     @Transactional

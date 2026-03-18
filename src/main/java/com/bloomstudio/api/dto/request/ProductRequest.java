@@ -1,12 +1,12 @@
 package com.bloomstudio.api.dto.request;
 
 import com.bloomstudio.api.enums.ProductCategory;
-import jakarta.validation.constraints.DecimalMin;
+import com.bloomstudio.api.enums.ProductSize;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -21,12 +21,6 @@ public class ProductRequest {
     private String description;
     private String shortDescription;
 
-    @NotNull(message = "Le prix est obligatoire")
-    @DecimalMin(value = "0.01", message = "Le prix doit être positif")
-    private BigDecimal price;
-
-    private BigDecimal originalPrice;
-
     private List<String> images;
 
     @NotNull(message = "La catégorie est obligatoire")
@@ -38,4 +32,15 @@ public class ProductRequest {
     private Boolean isFeatured = false;
     private Boolean isSeasonal = false;
     private Boolean inStock    = true;
+
+    @Data
+    public static class VariantRequest {
+        @NotNull
+        private ProductSize size;
+        @NotNull
+        private java.math.BigDecimal price;
+    }
+
+    @NotEmpty(message = "Les variantes sont obligatoires")
+    private List<VariantRequest> variants;
 }

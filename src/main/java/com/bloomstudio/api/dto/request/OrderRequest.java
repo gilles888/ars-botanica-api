@@ -1,5 +1,6 @@
 package com.bloomstudio.api.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -30,6 +31,10 @@ public class OrderRequest {
     public static class OrderItemRequest {
         @NotNull
         private Long productId;
+
+        @NotNull(message = "La variante est obligatoire")
+        @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "ID de la variante (taille) choisie")
+        private Long variantId;
 
         @NotNull
         @Min(value = 1, message = "La quantité doit être au moins 1")

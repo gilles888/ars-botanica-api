@@ -3,10 +3,12 @@ package com.bloomstudio.api.service;
 import com.bloomstudio.api.dto.request.ProductRequest;
 import com.bloomstudio.api.dto.response.ProductResponse;
 import com.bloomstudio.api.entity.Product;
+import com.bloomstudio.api.entity.ProductVariant;
 import com.bloomstudio.api.enums.ProductCategory;
 import com.bloomstudio.api.exception.BadRequestException;
 import com.bloomstudio.api.exception.ResourceNotFoundException;
 import com.bloomstudio.api.repository.ProductRepository;
+import com.bloomstudio.api.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductVariantRepository variantRepository;
 
     public List<ProductResponse> getAll() {
         return productRepository.findAll().stream().map(ProductResponse::from).toList();
@@ -51,7 +54,7 @@ public class ProductService {
 
     public List<ProductResponse> filter(ProductCategory category, BigDecimal minPrice,
                                          BigDecimal maxPrice, Boolean inStock) {
-        return productRepository.findWithFilters(category, minPrice, maxPrice, inStock)
+        return productRepository.findWithFilters(category, inStock)
                 .stream().map(ProductResponse::from).toList();
     }
 
@@ -61,7 +64,9 @@ public class ProductService {
             throw new BadRequestException("Un produit avec ce slug existe déjà");
         }
         Product product = toEntity(new Product(), request);
-        return ProductResponse.from(productRepository.save(product));
+        product = productRepository.save(product);
+        saveVariants(product, request);
+        return ProductResponse.from(productRepository.findById(product.getId()).orElseThrow());
     }
 
     @Transactional
@@ -70,7 +75,11 @@ public class ProductService {
         if (!product.getSlug().equals(request.getSlug()) && productRepository.existsBySlug(request.getSlug())) {
             throw new BadRequestException("Un produit avec ce slug existe déjà");
         }
-        return ProductResponse.from(productRepository.save(toEntity(product, request)));
+        product = toEntity(product, request);
+        product = productRepository.save(product);
+        variantRepository.deleteAll(variantRepository.findByProductId(product.getId()));
+        saveVariants(product, request);
+        return ProductResponse.from(productRepository.findById(product.getId()).orElseThrow());
     }
 
     @Transactional
@@ -88,8 +97,6 @@ public class ProductService {
         product.setSlug(r.getSlug());
         product.setDescription(r.getDescription());
         product.setShortDescription(r.getShortDescription());
-        product.setPrice(r.getPrice());
-        product.setOriginalPrice(r.getOriginalPrice());
         product.setImages(r.getImages());
         product.setCategory(r.getCategory());
         product.setTags(r.getTags());
@@ -98,5 +105,17 @@ public class ProductService {
         product.setIsSeasonal(Boolean.TRUE.equals(r.getIsSeasonal()));
         product.setInStock(Boolean.TRUE.equals(r.getInStock()));
         return product;
+    }
+
+    private void saveVariants(Product product, ProductRequest request) {
+        if (request.getVariants() == null) return;
+        for (ProductRequest.VariantRequest vr : request.getVariants()) {
+            ProductVariant variant = ProductVariant.builder()
+                    .product(product)
+                    .size(vr.getSize())
+                    .price(vr.getPrice())
+                    .build();
+            variantRepository.save(variant);
+        }
     }
 }

@@ -5,9 +5,9 @@ import com.bloomstudio.api.enums.ProductCategory;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data @Builder
 public class ProductResponse {
@@ -16,8 +16,6 @@ public class ProductResponse {
     private String slug;
     private String description;
     private String shortDescription;
-    private BigDecimal price;
-    private BigDecimal originalPrice;
     private List<String> images;
     private ProductCategory category;
     private List<String> tags;
@@ -28,6 +26,7 @@ public class ProductResponse {
     private Boolean isSeasonal;
     private Boolean inStock;
     private LocalDateTime createdAt;
+    private List<ProductVariantResponse> variants;
 
     public static ProductResponse from(Product p) {
         return ProductResponse.builder()
@@ -36,8 +35,6 @@ public class ProductResponse {
                 .slug(p.getSlug())
                 .description(p.getDescription())
                 .shortDescription(p.getShortDescription())
-                .price(p.getPrice())
-                .originalPrice(p.getOriginalPrice())
                 .images(p.getImages())
                 .category(p.getCategory())
                 .tags(p.getTags())
@@ -48,6 +45,7 @@ public class ProductResponse {
                 .isSeasonal(p.getIsSeasonal())
                 .inStock(p.getInStock())
                 .createdAt(p.getCreatedAt())
+                .variants(p.getVariants().stream().map(ProductVariantResponse::from).collect(Collectors.toList()))
                 .build();
     }
 }
