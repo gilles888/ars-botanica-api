@@ -45,6 +45,10 @@ public class UserService {
         if (request.getPassword()  != null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
+        // Mise à jour de l'adresse de livraison par défaut
+        if (request.getAddress()   != null) user.setAddress(request.getAddress());
+        if (request.getCity()      != null) user.setCity(request.getCity());
+        if (request.getZip()       != null) user.setZip(request.getZip());
         return UserResponse.from(userRepository.save(user));
     }
 

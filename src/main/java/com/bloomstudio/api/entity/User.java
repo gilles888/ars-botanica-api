@@ -34,6 +34,11 @@ public class User implements UserDetails {
 
     private String phone;
 
+    // Adresse de livraison par défaut (nullable — tous les champs sont optionnels)
+    private String address;
+    private String city;
+    private String zip;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;

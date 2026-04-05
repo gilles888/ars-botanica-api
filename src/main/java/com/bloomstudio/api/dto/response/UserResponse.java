@@ -14,6 +14,10 @@ public class UserResponse {
     private String lastName;
     private String email;
     private String phone;
+    // Adresse de livraison par défaut
+    private String address;
+    private String city;
+    private String zip;
     private Role role;
     private LocalDateTime createdAt;
 
@@ -24,6 +28,9 @@ public class UserResponse {
                 .lastName(u.getLastName())
                 .email(u.getEmail())
                 .phone(u.getPhone())
+                .address(u.getAddress())
+                .city(u.getCity())
+                .zip(u.getZip())
                 .role(u.getRole())
                 .createdAt(u.getCreatedAt())
                 .build();
