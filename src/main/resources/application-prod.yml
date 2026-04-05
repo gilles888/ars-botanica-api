@@ -14,9 +14,9 @@ server:
   port: ${SERVER_PORT:8082}
 
 # Clé JWT sécurisée de 256 bits minimum pour HMAC-SHA256
-# La valeur est définie directement ici pour éviter tout conflit avec les variables système
+# La valeur DOIT être fournie via la variable d'environnement JWT_SECRET (définie dans le service systemd)
 app:
   jwt:
-    secret: y12B9kZAzykyTo/yRJ16EmhWb61w2740JatiBCtQUcY=
+    secret: ${JWT_SECRET}
     expiration: 86400000
     refresh-expiration: 604800000
