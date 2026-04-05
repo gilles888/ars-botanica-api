@@ -1,5 +1,6 @@
 package com.bloomstudio.api.service;
 
+import com.bloomstudio.api.dto.request.FulfillmentRequest;
 import com.bloomstudio.api.dto.request.OrderRequest;
 import com.bloomstudio.api.dto.response.OrderResponse;
 import com.bloomstudio.api.entity.Order;
@@ -155,6 +156,16 @@ public class OrderService {
     public OrderResponse updateStatus(Long id, OrderStatus status) {
         Order order = findById(id);
         order.setStatus(status);
+        return OrderResponse.from(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponse updateFulfillment(Long id, FulfillmentRequest request) {
+        Order order = findById(id);
+        order.setStatus(request.getStatus());
+        if (request.getTrackingNumber() != null) order.setTrackingNumber(request.getTrackingNumber());
+        if (request.getCarrier() != null) order.setCarrier(request.getCarrier());
+        if (request.getFulfillmentNote() != null) order.setFulfillmentNote(request.getFulfillmentNote());
         return OrderResponse.from(orderRepository.save(order));
     }
 

@@ -1,5 +1,6 @@
 package com.bloomstudio.api.controller;
 
+import com.bloomstudio.api.dto.request.FulfillmentRequest;
 import com.bloomstudio.api.dto.request.OrderRequest;
 import com.bloomstudio.api.dto.response.OrderResponse;
 import com.bloomstudio.api.enums.OrderStatus;
@@ -75,5 +76,13 @@ public class OrderController {
     public ResponseEntity<OrderResponse> updateStatus(@PathVariable Long id,
                                                        @RequestParam OrderStatus status) {
         return ResponseEntity.ok(orderService.updateStatus(id, status));
+    }
+
+    @PatchMapping("/{id}/fulfillment")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Mettre à jour le fulfillment (ADMIN)")
+    public ResponseEntity<OrderResponse> updateFulfillment(@PathVariable Long id,
+                                                            @Valid @RequestBody FulfillmentRequest request) {
+        return ResponseEntity.ok(orderService.updateFulfillment(id, request));
     }
 }

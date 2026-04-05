@@ -24,6 +24,9 @@ public class OrderResponse {
     private String deliveryCity;
     private String deliveryMethod;
     private String deliveryNotes;
+    private String trackingNumber;
+    private String carrier;
+    private String fulfillmentNote;
     private BigDecimal subtotal;
     private BigDecimal shippingCost;
     private BigDecimal total;
@@ -70,6 +73,9 @@ public class OrderResponse {
                 .deliveryCity(o.getDeliveryCity())
                 .deliveryMethod(o.getDeliveryMethod())
                 .deliveryNotes(o.getDeliveryNotes())
+                .trackingNumber(o.getTrackingNumber())
+                .carrier(o.getCarrier())
+                .fulfillmentNote(o.getFulfillmentNote())
                 .subtotal(o.getSubtotal())
                 .shippingCost(o.getShippingCost())
                 .total(o.getTotal())

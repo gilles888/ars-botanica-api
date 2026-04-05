@@ -42,6 +42,13 @@ public class Order {
     private String deliveryMethod;
     private String deliveryNotes;
 
+    // Fulfillment info (renseigné par l'admin lors de la confirmation/expédition)
+    private String trackingNumber;
+    private String carrier;
+
+    @Column(columnDefinition = "TEXT")
+    private String fulfillmentNote;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 
