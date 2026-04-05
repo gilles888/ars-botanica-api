@@ -178,10 +178,12 @@ public class PaymentController {
 
     /**
      * Vérifie le statut d'une session Stripe par son identifiant.
-     * Utilisé par la page de confirmation pour afficher le résultat du paiement.
+     * Si le paiement est confirmé ("paid") et que la commande n'est pas encore PAID,
+     * la commande est immédiatement passée au statut PAID (filet de sécurité en cas
+     * de non-réception du webhook Stripe).
      *
      * @param sessionId l'identifiant de la session Stripe (cs_xxx)
-     * @return SessionStatusResponse contenant le statut et le numéro de commande
+     * @return SessionStatusResponse contenant le statut, le numéro de commande et l'email client
      */
     @GetMapping("/session/{sessionId}")
     @Operation(summary = "Vérifier le statut d'une session Stripe")
@@ -197,9 +199,23 @@ public class PaymentController {
                     ? session.getMetadata().get("orderNumber")
                     : null;
 
+            // Récupération de l'email client depuis les customerDetails Stripe
+            String customerEmail = session.getCustomerDetails() != null
+                    ? session.getCustomerDetails().getEmail()
+                    : null;
+
+            // Filet de sécurité : si Stripe confirme le paiement mais que le webhook
+            // n'a pas encore été reçu, on confirme manuellement la commande ici.
+            if ("paid".equals(session.getPaymentStatus()) && !orderService.isAlreadyPaid(sessionId)) {
+                log.info("Paiement confirmé via polling pour la session {} — confirmation manuelle de la commande {}",
+                        sessionId, orderNumber);
+                orderService.confirmPayment(sessionId);
+            }
+
             SessionStatusResponse response = SessionStatusResponse.builder()
                     .status(session.getStatus())
                     .orderNumber(orderNumber)
+                    .customerEmail(customerEmail)
                     .build();
 
             return ResponseEntity.ok(response);

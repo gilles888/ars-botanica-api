@@ -25,4 +25,10 @@ public class SessionStatusResponse {
      * Extrait des métadonnées Stripe.
      */
     private String orderNumber;
+
+    /**
+     * Email du client extrait des customerDetails de la session Stripe.
+     * Disponible uniquement lorsque le paiement est complété.
+     */
+    private String customerEmail;
 }

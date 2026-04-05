@@ -4,7 +4,11 @@ import com.bloomstudio.api.entity.Order;
 import com.bloomstudio.api.entity.OrderItem;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.WebhookEndpoint;
+import com.stripe.model.WebhookEndpointCollection;
 import com.stripe.model.checkout.Session;
+import com.stripe.param.WebhookEndpointCreateParams;
+import com.stripe.param.WebhookEndpointListParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -32,13 +36,57 @@ public class StripeService {
     @Value("${app.stripe.return-url}")
     private String returnUrl;
 
+    /** URL du webhook Stripe à enregistrer sur le dashboard Stripe. */
+    private static final String WEBHOOK_URL = "https://arsbotanica.gilmotech.be/api/payments/webhook";
+
     /**
-     * Initialise la clé secrète Stripe au démarrage de l'application.
+     * Initialise la clé secrète Stripe au démarrage de l'application,
+     * puis enregistre le webhook si celui-ci n'existe pas encore dans Stripe.
      */
     @PostConstruct
     public void init() {
         Stripe.apiKey = secretKey;
         log.info("Stripe initialisé avec la clé : {}***", secretKey.substring(0, 12));
+
+        enregistrerWebhookSiAbsent();
+    }
+
+    /**
+     * Vérifie si un webhook actif pointant vers {@value #WEBHOOK_URL} existe déjà
+     * dans le dashboard Stripe. Si ce n'est pas le cas, il est créé automatiquement.
+     * Cette méthode est tolérante aux erreurs : un échec ne bloque pas le démarrage.
+     */
+    private void enregistrerWebhookSiAbsent() {
+        try {
+            // Récupération de tous les webhooks existants (max 100)
+            WebhookEndpointListParams listParams = WebhookEndpointListParams.builder()
+                    .setLimit(100L)
+                    .build();
+            WebhookEndpointCollection endpoints = WebhookEndpoint.list(listParams);
+
+            // Vérification : un webhook actif avec la même URL existe-t-il déjà ?
+            boolean dejaEnregistre = endpoints.getData().stream()
+                    .anyMatch(e -> WEBHOOK_URL.equals(e.getUrl()) && "enabled".equals(e.getStatus()));
+
+            if (dejaEnregistre) {
+                log.info("Webhook Stripe déjà enregistré et actif pour : {}", WEBHOOK_URL);
+                return;
+            }
+
+            // Création du webhook avec l'événement checkout.session.completed
+            WebhookEndpoint.create(
+                    WebhookEndpointCreateParams.builder()
+                            .setUrl(WEBHOOK_URL)
+                            .addEnabledEvent(WebhookEndpointCreateParams.EnabledEvent.CHECKOUT__SESSION__COMPLETED)
+                            .build()
+            );
+
+            log.info("Webhook Stripe enregistré avec succès : {}", WEBHOOK_URL);
+
+        } catch (StripeException e) {
+            // On logge l'erreur sans bloquer le démarrage de l'application
+            log.warn("Impossible d'enregistrer le webhook Stripe (l'application continue) : {}", e.getMessage());
+        }
     }
 
     /**

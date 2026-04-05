@@ -128,9 +128,25 @@ public class OrderService {
     @Transactional
     public void confirmPayment(String stripeSessionId) {
         orderRepository.findByStripeSessionId(stripeSessionId).ifPresent(order -> {
-            order.setStatus(OrderStatus.PAID);
-            orderRepository.save(order);
+            if (order.getStatus() != OrderStatus.PAID) {
+                order.setStatus(OrderStatus.PAID);
+                // updatedAt est mis à jour automatiquement via @PreUpdate
+                orderRepository.save(order);
+            }
         });
+    }
+
+    /**
+     * Indique si une commande associée à une session Stripe est déjà au statut PAID.
+     * Utilisé par le controller pour éviter une double confirmation.
+     *
+     * @param stripeSessionId l'identifiant de la session Stripe
+     * @return true si la commande est déjà PAID, false sinon ou si introuvable
+     */
+    public boolean isAlreadyPaid(String stripeSessionId) {
+        return orderRepository.findByStripeSessionId(stripeSessionId)
+                .map(order -> order.getStatus() == OrderStatus.PAID)
+                .orElse(false);
     }
 
     @Transactional

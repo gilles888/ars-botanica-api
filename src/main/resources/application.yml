@@ -24,7 +24,7 @@ app:
   stripe:
     secret-key: ${STRIPE_SECRET_KEY}
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
-    return-url: ${STRIPE_RETURN_URL:https://arsbotanica.gilmotech.be/commande/confirmation}
+    return-url: ${STRIPE_RETURN_URL:https://arsbotanica.gilmotech.be/commande/success}
 
 springdoc:
   api-docs:
