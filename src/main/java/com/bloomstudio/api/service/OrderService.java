@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -169,6 +170,16 @@ public class OrderService {
         }
         order.setStatus(OrderStatus.CANCELLED);
         return OrderResponse.from(orderRepository.save(order));
+    }
+
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        orderRepository.findById(orderId).ifPresent(order -> {
+            order.setStatus(OrderStatus.CANCELLED);
+            order.setUpdatedAt(java.time.LocalDateTime.now());
+            orderRepository.save(order);
+            log.info("Commande {} annulée suite à échec Stripe", order.getOrderNumber());
+        });
     }
 
     private Order findById(Long id) {

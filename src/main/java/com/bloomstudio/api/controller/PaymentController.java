@@ -89,10 +89,10 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (StripeException e) {
-            // En cas d'échec Stripe, la commande reste en PAYMENT_PENDING
-            // Le frontend devra réessayer ou contacter le support
-            log.error("Erreur Stripe lors de la création de la session pour la commande {} : {}",
+            // En cas d'échec Stripe, on annule la commande pour éviter les orphelins
+            log.error("Erreur Stripe pour la commande {} : {} — annulation de la commande",
                     order.getOrderNumber(), e.getMessage());
+            orderService.cancelOrder(order.getId());
             throw new RuntimeException("Erreur lors de la création de la session de paiement : " + e.getMessage(), e);
         }
     }
