@@ -89,6 +89,11 @@
       <artifactId>stripe-java</artifactId>
       <version>25.3.0</version>
     </dependency>
+    <!-- Gson — dépendance transitive de stripe-java, déclarée explicitement pour la compilation -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
 
     <!-- Swagger / OpenAPI -->
     <dependency>

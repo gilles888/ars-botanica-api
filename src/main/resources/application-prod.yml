@@ -20,3 +20,7 @@ app:
     secret: ${JWT_SECRET}
     expiration: 86400000
     refresh-expiration: 604800000
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    return-url: ${STRIPE_RETURN_URL:https://arsbotanica.gilmotech.be/commande/confirmation}
