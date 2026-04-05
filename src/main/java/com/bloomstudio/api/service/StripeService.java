@@ -61,12 +61,10 @@ public class StripeService {
 
         // Construction des paramètres de session en mode Embedded
         SessionCreateParams params = SessionCreateParams.builder()
+                .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setUiMode(SessionCreateParams.UiMode.EMBEDDED)
-                // L'URL de retour reçoit automatiquement {CHECKOUT_SESSION_ID} substitué par Stripe
                 .setReturnUrl(returnUrl + "?session_id={CHECKOUT_SESSION_ID}")
-                .setCurrency("eur")
                 .addAllLineItem(lineItems)
-                // Métadonnées pour retrouver la commande côté backend lors du webhook
                 .putMetadata("orderNumber", order.getOrderNumber())
                 .putMetadata("orderId", String.valueOf(order.getId()))
                 .build();
