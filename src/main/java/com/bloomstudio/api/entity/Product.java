@@ -20,13 +20,31 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
+    // Traductions du nom du produit
+    private String nameEn;
+    private String nameNl;
+
     @Column(nullable = false, unique = true)
     private String slug;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    // Traductions de la description complète
+    @Column(columnDefinition = "TEXT")
+    private String descriptionEn;
+
+    @Column(columnDefinition = "TEXT")
+    private String descriptionNl;
+
     private String shortDescription;
+
+    // Traductions de la description courte
+    @Column(columnDefinition = "TEXT")
+    private String shortDescriptionEn;
+
+    @Column(columnDefinition = "TEXT")
+    private String shortDescriptionNl;
 
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))

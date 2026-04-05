@@ -13,9 +13,18 @@ import java.util.stream.Collectors;
 public class ProductResponse {
     private Long id;
     private String name;
+    // Traductions du nom
+    private String nameEn;
+    private String nameNl;
     private String slug;
     private String description;
+    // Traductions de la description complète
+    private String descriptionEn;
+    private String descriptionNl;
     private String shortDescription;
+    // Traductions de la description courte
+    private String shortDescriptionEn;
+    private String shortDescriptionNl;
     private List<String> images;
     private ProductCategory category;
     private List<String> tags;
@@ -32,9 +41,15 @@ public class ProductResponse {
         return ProductResponse.builder()
                 .id(p.getId())
                 .name(p.getName())
+                .nameEn(p.getNameEn())
+                .nameNl(p.getNameNl())
                 .slug(p.getSlug())
                 .description(p.getDescription())
+                .descriptionEn(p.getDescriptionEn())
+                .descriptionNl(p.getDescriptionNl())
                 .shortDescription(p.getShortDescription())
+                .shortDescriptionEn(p.getShortDescriptionEn())
+                .shortDescriptionNl(p.getShortDescriptionNl())
                 .images(p.getImages())
                 .category(p.getCategory())
                 .tags(p.getTags())

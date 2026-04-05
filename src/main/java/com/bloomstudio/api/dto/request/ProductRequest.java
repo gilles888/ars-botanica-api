@@ -15,11 +15,22 @@ public class ProductRequest {
     @NotBlank(message = "Le nom est obligatoire")
     private String name;
 
+    // Traductions du nom (optionnelles)
+    private String nameEn;
+    private String nameNl;
+
     @NotBlank(message = "Le slug est obligatoire")
     private String slug;
 
     private String description;
+    // Traductions de la description complète (optionnelles)
+    private String descriptionEn;
+    private String descriptionNl;
+
     private String shortDescription;
+    // Traductions de la description courte (optionnelles)
+    private String shortDescriptionEn;
+    private String shortDescriptionNl;
 
     private List<String> images;
 

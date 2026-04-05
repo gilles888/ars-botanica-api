@@ -94,9 +94,15 @@ public class ProductService {
 
     private Product toEntity(Product product, ProductRequest r) {
         product.setName(r.getName());
+        product.setNameEn(r.getNameEn());
+        product.setNameNl(r.getNameNl());
         product.setSlug(r.getSlug());
         product.setDescription(r.getDescription());
+        product.setDescriptionEn(r.getDescriptionEn());
+        product.setDescriptionNl(r.getDescriptionNl());
         product.setShortDescription(r.getShortDescription());
+        product.setShortDescriptionEn(r.getShortDescriptionEn());
+        product.setShortDescriptionNl(r.getShortDescriptionNl());
         product.setImages(r.getImages());
         product.setCategory(r.getCategory());
         product.setTags(r.getTags());
