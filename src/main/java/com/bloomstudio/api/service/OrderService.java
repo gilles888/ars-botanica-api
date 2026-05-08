@@ -17,9 +17,12 @@ import com.bloomstudio.api.repository.ProductVariantRepository;
 import com.bloomstudio.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,6 +37,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository variantRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public List<OrderResponse> getMyOrders(String email) {
         User user = findUserByEmail(email);
@@ -133,8 +137,18 @@ public class OrderService {
         orderRepository.findByStripeSessionId(stripeSessionId).ifPresent(order -> {
             if (order.getStatus() != OrderStatus.PAID) {
                 order.setStatus(OrderStatus.PAID);
-                // updatedAt est mis à jour automatiquement via @PreUpdate
                 orderRepository.save(order);
+                // Forcer l'initialisation des proxies Hibernate pendant que la session est ouverte,
+                // car sendOrderConfirmationEmail est @Async et s'exécute après la fermeture de la session.
+                Hibernate.initialize(order.getUser());
+                Hibernate.initialize(order.getItems());
+                order.getItems().forEach(item -> Hibernate.initialize(item.getProduct()));
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        emailService.sendOrderConfirmationEmail(order);
+                    }
+                });
             }
         });
     }
@@ -146,6 +160,15 @@ public class OrderService {
      * @param stripeSessionId l'identifiant de la session Stripe
      * @return true si la commande est déjà PAID, false sinon ou si introuvable
      */
+    @Transactional(readOnly = true)
+    public void resendConfirmationEmail(Long orderId) {
+        Order order = findById(orderId);
+        Hibernate.initialize(order.getUser());
+        Hibernate.initialize(order.getItems());
+        order.getItems().forEach(item -> Hibernate.initialize(item.getProduct()));
+        emailService.sendOrderConfirmationEmail(order);
+    }
+
     public boolean isAlreadyPaid(String stripeSessionId) {
         return orderRepository.findByStripeSessionId(stripeSessionId)
                 .map(order -> order.getStatus() == OrderStatus.PAID)
@@ -156,7 +179,15 @@ public class OrderService {
     public OrderResponse updateStatus(Long id, OrderStatus status) {
         Order order = findById(id);
         order.setStatus(status);
-        return OrderResponse.from(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        Hibernate.initialize(saved.getUser());
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                emailService.sendOrderStatusUpdateEmail(saved);
+            }
+        });
+        return OrderResponse.from(saved);
     }
 
     @Transactional
@@ -166,7 +197,15 @@ public class OrderService {
         if (request.getTrackingNumber() != null) order.setTrackingNumber(request.getTrackingNumber());
         if (request.getCarrier() != null) order.setCarrier(request.getCarrier());
         if (request.getFulfillmentNote() != null) order.setFulfillmentNote(request.getFulfillmentNote());
-        return OrderResponse.from(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        Hibernate.initialize(saved.getUser());
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                emailService.sendOrderStatusUpdateEmail(saved);
+            }
+        });
+        return OrderResponse.from(saved);
     }
 
     @Transactional

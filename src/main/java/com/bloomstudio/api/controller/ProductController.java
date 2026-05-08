@@ -33,44 +33,55 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "Lister tous les produits")
-    public ResponseEntity<List<ProductResponse>> getAll() {
-        return ResponseEntity.ok(productService.getAll());
+    public ResponseEntity<List<ProductResponse>> getAll(
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.getAll(lang));
     }
 
     @GetMapping("/featured")
     @Operation(summary = "Produits mis en avant")
-    public ResponseEntity<List<ProductResponse>> getFeatured() {
-        return ResponseEntity.ok(productService.getFeatured());
+    public ResponseEntity<List<ProductResponse>> getFeatured(
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.getFeatured(lang));
     }
 
     @GetMapping("/new")
     @Operation(summary = "Nouveautés")
-    public ResponseEntity<List<ProductResponse>> getNew() {
-        return ResponseEntity.ok(productService.getNewArrivals());
+    public ResponseEntity<List<ProductResponse>> getNew(
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.getNewArrivals(lang));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Détail par ID")
-    public ResponseEntity<ProductResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getById(id));
+    public ResponseEntity<ProductResponse> getById(
+            @PathVariable Long id,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.getById(id, lang));
     }
 
     @GetMapping("/slug/{slug}")
     @Operation(summary = "Détail par slug")
-    public ResponseEntity<ProductResponse> getBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(productService.getBySlug(slug));
+    public ResponseEntity<ProductResponse> getBySlug(
+            @PathVariable String slug,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.getBySlug(slug, lang));
     }
 
     @GetMapping("/category/{category}")
     @Operation(summary = "Produits par catégorie")
-    public ResponseEntity<List<ProductResponse>> getByCategory(@PathVariable ProductCategory category) {
-        return ResponseEntity.ok(productService.getByCategory(category));
+    public ResponseEntity<List<ProductResponse>> getByCategory(
+            @PathVariable ProductCategory category,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.getByCategory(category, lang));
     }
 
     @GetMapping("/search")
     @Operation(summary = "Recherche plein texte")
-    public ResponseEntity<List<ProductResponse>> search(@RequestParam String q) {
-        return ResponseEntity.ok(productService.search(q));
+    public ResponseEntity<List<ProductResponse>> search(
+            @RequestParam String q,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.search(q, lang));
     }
 
     @GetMapping("/filter")
@@ -79,8 +90,9 @@ public class ProductController {
             @RequestParam(required = false) ProductCategory category,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Boolean inStock) {
-        return ResponseEntity.ok(productService.filter(category, minPrice, maxPrice, inStock));
+            @RequestParam(required = false) Boolean inStock,
+            @RequestHeader(value = "Accept-Language", defaultValue = "fr") String lang) {
+        return ResponseEntity.ok(productService.filter(category, minPrice, maxPrice, inStock, lang));
     }
 
     @PostMapping

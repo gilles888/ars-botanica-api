@@ -1,7 +1,7 @@
 -- Mise à jour des traductions EN/NL pour les produits existants
 -- À exécuter une seule fois sur la base de données de production
 
-UPDATE product SET
+UPDATE products SET
     name_en = 'Rose Garden Bouquet',
     name_nl = 'Rozentuin Boeket',
     description_en = 'A generous bouquet of fresh roses in pink and white hues.',
@@ -10,7 +10,7 @@ UPDATE product SET
     short_description_nl = 'Verse rozen in pastelkleuren met groen gebladerte'
 WHERE slug = 'bouquet-jardin-roses';
 
-UPDATE product SET
+UPDATE products SET
     name_en = 'Eternal Spring Composition',
     name_nl = 'Eeuwige Lente Compositie',
     description_en = 'Tulips, ranunculus and daisies in a handmade ceramic vase.',
@@ -19,7 +19,7 @@ UPDATE product SET
     short_description_nl = 'Tulpen, ranonkels en madelieven in keramisch vaas'
 WHERE slug = 'composition-printemps-eternel';
 
-UPDATE product SET
+UPDATE products SET
     name_en = 'Phalaenopsis Orchid',
     name_nl = 'Phalaenopsis Orchidee',
     description_en = 'An elegant phalaenopsis orchid in a decorative pot.',
@@ -28,7 +28,7 @@ UPDATE product SET
     short_description_nl = 'Orchidee in decoratieve pot, lang houdbaar'
 WHERE slug = 'orchidee-phalaenopsis';
 
-UPDATE product SET
+UPDATE products SET
     name_en = 'Timeless Bridal Bouquet',
     name_nl = 'Tijdloos Bruidsboeket',
     description_en = 'White peonies, garden roses and magnolia leaves.',
@@ -37,7 +37,7 @@ UPDATE product SET
     short_description_nl = 'Witte pioenrozen en tuinrozen voor uw bruiloft'
 WHERE slug = 'bouquet-mariee-intemporel';
 
-UPDATE product SET
+UPDATE products SET
     name_en = 'Wild & Natural Bouquet',
     name_nl = 'Wild & Natuurlijk Boeket',
     description_en = 'A rustic bouquet blending wildflowers and aromatic herbs.',
@@ -46,7 +46,7 @@ UPDATE product SET
     short_description_nl = 'Wilde bloemen en kruiden in landelijke stijl'
 WHERE slug = 'bouquet-sauvage-naturel';
 
-UPDATE product SET
+UPDATE products SET
     name_en = 'Succulent Planter Box',
     name_nl = 'Vetplanten in Plantenbak',
     description_en = 'An assortment of colourful succulents in a natural wood planter.',

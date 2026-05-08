@@ -23,39 +23,68 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductVariantRepository variantRepository;
 
-    public List<ProductResponse> getAll() {
-        return productRepository.findAll().stream().map(ProductResponse::from).toList();
+    /**
+     * Retourne tous les produits localisés selon la langue demandée.
+     */
+    public List<ProductResponse> getAll(String lang) {
+        return productRepository.findAll().stream()
+                .map(p -> ProductResponse.from(p, lang)).toList();
     }
 
-    public List<ProductResponse> getFeatured() {
-        return productRepository.findByIsFeaturedTrue().stream().map(ProductResponse::from).toList();
+    /**
+     * Retourne les produits mis en avant, localisés selon la langue demandée.
+     */
+    public List<ProductResponse> getFeatured(String lang) {
+        return productRepository.findByIsFeaturedTrue().stream()
+                .map(p -> ProductResponse.from(p, lang)).toList();
     }
 
-    public List<ProductResponse> getNewArrivals() {
-        return productRepository.findByIsNewTrue().stream().map(ProductResponse::from).toList();
+    /**
+     * Retourne les nouveautés, localisées selon la langue demandée.
+     */
+    public List<ProductResponse> getNewArrivals(String lang) {
+        return productRepository.findByIsNewTrue().stream()
+                .map(p -> ProductResponse.from(p, lang)).toList();
     }
 
-    public ProductResponse getById(Long id) {
-        return ProductResponse.from(findById(id));
+    /**
+     * Retourne un produit par son identifiant, localisé selon la langue demandée.
+     */
+    public ProductResponse getById(Long id, String lang) {
+        return ProductResponse.from(findById(id), lang);
     }
 
-    public ProductResponse getBySlug(String slug) {
+    /**
+     * Retourne un produit par son slug, localisé selon la langue demandée.
+     */
+    public ProductResponse getBySlug(String slug, String lang) {
         return ProductResponse.from(productRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé : " + slug)));
+                .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé : " + slug)), lang);
     }
 
-    public List<ProductResponse> getByCategory(ProductCategory category) {
-        return productRepository.findByCategory(category).stream().map(ProductResponse::from).toList();
+    /**
+     * Retourne les produits d'une catégorie, localisés selon la langue demandée.
+     */
+    public List<ProductResponse> getByCategory(ProductCategory category, String lang) {
+        return productRepository.findByCategory(category).stream()
+                .map(p -> ProductResponse.from(p, lang)).toList();
     }
 
-    public List<ProductResponse> search(String query) {
-        return productRepository.search(query).stream().map(ProductResponse::from).toList();
+    /**
+     * Recherche plein texte, résultats localisés selon la langue demandée.
+     */
+    public List<ProductResponse> search(String query, String lang) {
+        return productRepository.search(query).stream()
+                .map(p -> ProductResponse.from(p, lang)).toList();
     }
 
+    /**
+     * Filtre les produits selon les critères fournis, résultats localisés selon la langue demandée.
+     */
     public List<ProductResponse> filter(ProductCategory category, BigDecimal minPrice,
-                                         BigDecimal maxPrice, Boolean inStock) {
+                                         BigDecimal maxPrice, Boolean inStock, String lang) {
         return productRepository.findWithFilters(category, inStock)
-                .stream().map(ProductResponse::from).toList();
+                .stream().map(p -> ProductResponse.from(p, lang)).toList();
     }
 
     @Transactional
@@ -66,7 +95,8 @@ public class ProductService {
         Product product = toEntity(new Product(), request);
         product = productRepository.save(product);
         saveVariants(product, request);
-        return ProductResponse.from(productRepository.findById(product.getId()).orElseThrow());
+        // Les endpoints admin retournent toujours la version française de référence
+        return ProductResponse.from(productRepository.findById(product.getId()).orElseThrow(), "fr");
     }
 
     @Transactional
@@ -79,7 +109,8 @@ public class ProductService {
         product = productRepository.save(product);
         variantRepository.deleteAll(variantRepository.findByProductId(product.getId()));
         saveVariants(product, request);
-        return ProductResponse.from(productRepository.findById(product.getId()).orElseThrow());
+        // Les endpoints admin retournent toujours la version française de référence
+        return ProductResponse.from(productRepository.findById(product.getId()).orElseThrow(), "fr");
     }
 
     @Transactional

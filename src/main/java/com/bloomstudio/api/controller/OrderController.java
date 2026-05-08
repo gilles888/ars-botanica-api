@@ -85,4 +85,12 @@ public class OrderController {
                                                             @Valid @RequestBody FulfillmentRequest request) {
         return ResponseEntity.ok(orderService.updateFulfillment(id, request));
     }
+
+    @PostMapping("/{id}/resend-confirmation")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Renvoyer l'email de confirmation (ADMIN)")
+    public ResponseEntity<Void> resendConfirmation(@PathVariable Long id) {
+        orderService.resendConfirmationEmail(id);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -12,19 +12,13 @@ import java.util.stream.Collectors;
 @Data @Builder
 public class ProductResponse {
     private Long id;
+    // Champ localisé selon Accept-Language (fr/en/nl)
     private String name;
-    // Traductions du nom
-    private String nameEn;
-    private String nameNl;
     private String slug;
+    // Champ localisé selon Accept-Language (fr/en/nl)
     private String description;
-    // Traductions de la description complète
-    private String descriptionEn;
-    private String descriptionNl;
+    // Champ localisé selon Accept-Language (fr/en/nl)
     private String shortDescription;
-    // Traductions de la description courte
-    private String shortDescriptionEn;
-    private String shortDescriptionNl;
     private List<String> images;
     private ProductCategory category;
     private List<String> tags;
@@ -37,19 +31,42 @@ public class ProductResponse {
     private LocalDateTime createdAt;
     private List<ProductVariantResponse> variants;
 
-    public static ProductResponse from(Product p) {
+    /**
+     * Résout la valeur localisée d'un champ texte selon la langue demandée.
+     * Si la traduction est absente ou vide, on retombe sur la valeur française.
+     *
+     * @param fr    valeur en français (valeur de référence)
+     * @param en    valeur en anglais (peut être null)
+     * @param nl    valeur en néerlandais (peut être null)
+     * @param lang  code langue : "en", "nl" ou autre (→ fr par défaut)
+     * @return      la valeur localisée résolue
+     */
+    private static String resoudre(String fr, String en, String nl, String lang) {
+        if ("en".equalsIgnoreCase(lang) && en != null && !en.isBlank()) {
+            return en;
+        }
+        if ("nl".equalsIgnoreCase(lang) && nl != null && !nl.isBlank()) {
+            return nl;
+        }
+        return fr;
+    }
+
+    /**
+     * Construit un ProductResponse localisé selon la langue fournie.
+     * Seuls les champs name, description et shortDescription sont traduits ;
+     * tous les autres champs restent inchangés.
+     *
+     * @param p     l'entité produit
+     * @param lang  le code langue extrait du header Accept-Language ("fr", "en", "nl")
+     * @return      le DTO prêt à être sérialisé
+     */
+    public static ProductResponse from(Product p, String lang) {
         return ProductResponse.builder()
                 .id(p.getId())
-                .name(p.getName())
-                .nameEn(p.getNameEn())
-                .nameNl(p.getNameNl())
+                .name(resoudre(p.getName(), p.getNameEn(), p.getNameNl(), lang))
                 .slug(p.getSlug())
-                .description(p.getDescription())
-                .descriptionEn(p.getDescriptionEn())
-                .descriptionNl(p.getDescriptionNl())
-                .shortDescription(p.getShortDescription())
-                .shortDescriptionEn(p.getShortDescriptionEn())
-                .shortDescriptionNl(p.getShortDescriptionNl())
+                .description(resoudre(p.getDescription(), p.getDescriptionEn(), p.getDescriptionNl(), lang))
+                .shortDescription(resoudre(p.getShortDescription(), p.getShortDescriptionEn(), p.getShortDescriptionNl(), lang))
                 .images(p.getImages())
                 .category(p.getCategory())
                 .tags(p.getTags())

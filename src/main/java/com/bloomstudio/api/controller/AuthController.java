@@ -1,7 +1,9 @@
 package com.bloomstudio.api.controller;
 
+import com.bloomstudio.api.dto.request.ForgotPasswordRequest;
 import com.bloomstudio.api.dto.request.LoginRequest;
 import com.bloomstudio.api.dto.request.RegisterRequest;
+import com.bloomstudio.api.dto.request.ResetPasswordRequest;
 import com.bloomstudio.api.dto.response.AuthResponse;
 import com.bloomstudio.api.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,5 +32,19 @@ public class AuthController {
     @Operation(summary = "Se connecter")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Demander une réinitialisation de mot de passe")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Réinitialiser le mot de passe avec le token reçu par email")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.noContent().build();
     }
 }
