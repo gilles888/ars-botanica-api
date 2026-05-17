@@ -1,6 +1,7 @@
 package com.bloomstudio.api.service;
 
 import com.bloomstudio.api.dto.request.FulfillmentRequest;
+import com.bloomstudio.api.dto.request.GuestOrderRequest;
 import com.bloomstudio.api.dto.request.OrderRequest;
 import com.bloomstudio.api.dto.response.OrderResponse;
 import com.bloomstudio.api.entity.Order;
@@ -70,7 +71,29 @@ public class OrderService {
     @Transactional
     public Order createOrderEntity(OrderRequest request, String email) {
         User user = findUserByEmail(email);
+        return buildAndSaveOrder(request, user);
+    }
 
+    @Transactional
+    public Order createGuestOrderEntity(GuestOrderRequest request) {
+        // Si un CLIENT/ADMIN existe avec cet email → lier à lui
+        User user = userRepository.findByEmail(request.getGuestEmail())
+                .filter(u -> u.getRole() != com.bloomstudio.api.enums.Role.GUEST)
+                .orElseGet(() -> {
+                    User guestUser = User.builder()
+                            .email(request.getGuestEmail())
+                            .firstName(request.getGuestFirstName())
+                            .lastName(request.getGuestLastName() != null ? request.getGuestLastName() : "")
+                            .phone(request.getGuestPhone())
+                            .password("GUEST_NO_PASSWORD")
+                            .role(com.bloomstudio.api.enums.Role.GUEST)
+                            .build();
+                    return userRepository.save(guestUser);
+                });
+        return buildAndSaveOrder(request, user);
+    }
+
+    private Order buildAndSaveOrder(OrderRequest request, User user) {
         Order order = Order.builder()
                 .orderNumber("BS-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .user(user)

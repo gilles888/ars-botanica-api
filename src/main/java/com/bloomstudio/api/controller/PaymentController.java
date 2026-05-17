@@ -1,5 +1,6 @@
 package com.bloomstudio.api.controller;
 
+import com.bloomstudio.api.dto.request.GuestOrderRequest;
 import com.bloomstudio.api.dto.request.OrderRequest;
 import com.bloomstudio.api.dto.response.CheckoutResponse;
 import com.bloomstudio.api.dto.response.SessionStatusResponse;
@@ -54,42 +55,40 @@ public class PaymentController {
     /**
      * Crée une commande et une session Stripe Embedded Checkout.
      * Retourne le clientSecret nécessaire au composant Stripe côté frontend.
+     * Supporte les utilisateurs authentifiés et les invités (sans JWT).
      *
      * @param request  le corps de la requête contenant les articles et les informations de livraison
-     * @param userDetails l'utilisateur authentifié extrait du JWT
+     * @param userDetails l'utilisateur authentifié extrait du JWT (null pour les invités)
      * @return CheckoutResponse contenant clientSecret, sessionId et orderNumber
      */
     @PostMapping("/checkout")
     @Operation(summary = "Créer une session Stripe Embedded Checkout")
-    @SecurityRequirement(name = "Bearer Auth")
     public ResponseEntity<CheckoutResponse> createCheckoutSession(
-            @Valid @RequestBody OrderRequest request,
+            @Valid @RequestBody GuestOrderRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        log.info("Création d'une session checkout pour l'utilisateur : {}", userDetails.getUsername());
-
-        // 1. Créer la commande en base avec le statut PAYMENT_PENDING
-        Order order = orderService.createOrderEntity(request, userDetails.getUsername());
-        log.info("Commande créée : {} (id={})", order.getOrderNumber(), order.getId());
+        Order order;
+        if (userDetails != null) {
+            log.info("Création d'une session checkout pour l'utilisateur : {}", userDetails.getUsername());
+            order = orderService.createOrderEntity(request, userDetails.getUsername());
+        } else {
+            log.info("Création d'une session checkout pour un invité : {}", request.getGuestEmail());
+            if (!StringUtils.hasText(request.getGuestEmail()) || !StringUtils.hasText(request.getGuestFirstName())) {
+                throw new com.bloomstudio.api.exception.BadRequestException("Email et prénom sont obligatoires pour une commande invité");
+            }
+            order = orderService.createGuestOrderEntity(request);
+        }
 
         try {
-            // 2. Créer la session Stripe Embedded Checkout
             Session session = stripeService.createCheckoutSession(order);
-
-            // 3. Persister l'identifiant de session Stripe dans la commande
             orderService.updateStripeSession(order.getId(), session.getId());
-
-            // 4. Retourner le clientSecret et les infos nécessaires au frontend
             CheckoutResponse response = CheckoutResponse.builder()
                     .clientSecret(session.getClientSecret())
                     .sessionId(session.getId())
                     .orderNumber(order.getOrderNumber())
                     .build();
-
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
         } catch (StripeException e) {
-            // En cas d'échec Stripe, on annule la commande pour éviter les orphelins
             log.error("Erreur Stripe pour la commande {} : {} — annulation de la commande",
                     order.getOrderNumber(), e.getMessage());
             orderService.cancelOrder(order.getId());

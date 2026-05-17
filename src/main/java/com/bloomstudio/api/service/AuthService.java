@@ -1,5 +1,6 @@
 package com.bloomstudio.api.service;
 
+import com.bloomstudio.api.dto.request.ConvertGuestRequest;
 import com.bloomstudio.api.dto.request.ForgotPasswordRequest;
 import com.bloomstudio.api.dto.request.LoginRequest;
 import com.bloomstudio.api.dto.request.RegisterRequest;
@@ -96,6 +97,29 @@ public class AuthService {
 
         resetToken.setUsed(true);
         resetTokenRepository.save(resetToken);
+    }
+
+    @Transactional
+    public AuthResponse convertGuest(ConvertGuestRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadRequestException("Aucun compte invité trouvé pour cet email"));
+
+        if (user.getRole() != Role.GUEST) {
+            throw new BadRequestException("Un compte existe déjà pour cet email");
+        }
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("Les mots de passe ne correspondent pas");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.CLIENT);
+        userRepository.save(user);
+
+        emailService.sendWelcomeEmail(user);
+
+        String token = jwtTokenProvider.generateToken(user);
+        return buildResponse(token, user);
     }
 
     private AuthResponse buildResponse(String token, User user) {

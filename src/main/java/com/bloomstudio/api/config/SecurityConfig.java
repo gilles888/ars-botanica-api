@@ -52,9 +52,9 @@ public class SecurityConfig {
                 // Products & Categories : lecture publique
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                // Paiements : checkout et vérification de session nécessitent l'auth ; webhook est public (voir PUBLIC_URLS)
-                .requestMatchers(HttpMethod.POST, "/api/payments/checkout").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/payments/session/**").authenticated()
+                // Paiements : checkout et vérification de session sont publics (invités supportés) ; webhook est public (voir PUBLIC_URLS)
+                .requestMatchers(HttpMethod.POST, "/api/payments/checkout").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/payments/session/**").permitAll()
                 // Orders : CLIENT ou ADMIN
                 .requestMatchers("/api/orders/**").authenticated()
                 // Users : ADMIN seulement pour la liste

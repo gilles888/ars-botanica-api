@@ -1,5 +1,6 @@
 package com.bloomstudio.api.controller;
 
+import com.bloomstudio.api.dto.request.ConvertGuestRequest;
 import com.bloomstudio.api.dto.request.ForgotPasswordRequest;
 import com.bloomstudio.api.dto.request.LoginRequest;
 import com.bloomstudio.api.dto.request.RegisterRequest;
@@ -46,5 +47,11 @@ public class AuthController {
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/convert-guest")
+    @Operation(summary = "Convertir un compte invité en compte utilisateur")
+    public ResponseEntity<AuthResponse> convertGuest(@Valid @RequestBody ConvertGuestRequest request) {
+        return ResponseEntity.ok(authService.convertGuest(request));
     }
 }
