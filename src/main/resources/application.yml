@@ -20,7 +20,9 @@ spring:
         smtp:
           auth: true
           ssl:
-            enable: true
+            enable: ${MAIL_SSL:true}
+          starttls:
+            enable: ${MAIL_STARTTLS:false}
 
 server:
   port: 8081
