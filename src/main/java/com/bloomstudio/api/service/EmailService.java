@@ -210,7 +210,7 @@ public class EmailService {
                   %s
                   <hr style="border:none;border-top:1px solid #e8f5e9;margin:32px 0;">
                   <p style="color:#888;font-size:0.85em;margin:0;">
-                    Ars Botanica · contact@gilmotech.be<br>
+                    Ars Botanica · arsbotanica@outlook.com<br>
                     Vous recevez cet email car vous avez un compte sur arsbotanica.gilmotech.be
                   </p>
                 </div>
